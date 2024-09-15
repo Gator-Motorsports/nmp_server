@@ -2,10 +2,10 @@ use tokio_util::codec::{Decoder, Encoder};
 
 use crate::message::{self, Data, Message};
 
-struct MessageCodec {}
+pub struct MessageCodec {}
 
 impl MessageCodec {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {}
     }
 }
@@ -59,7 +59,7 @@ impl Encoder<Message> for MessageCodec {
             }
             Message::Subscription(name) => {
                 dst.extend_from_slice(&1u32.to_le_bytes());
-                dst.extend_from_slice(&name.len().to_le_bytes());
+                dst.extend_from_slice(&(name.len() as u64).to_le_bytes());
                 for c in name.chars() {
                     dst.extend_from_slice(&(c as u8).to_le_bytes());
                 }
@@ -123,7 +123,7 @@ impl Decoder for MessageCodec {
             }
             1 => {
                 let name_length = u64::from_le_bytes(bytes[0..8].try_into().unwrap());
-                let _ = src.split_to(8);
+                let _ = bytes.split_to(8);
                 let mut name = String::new();
                 for i in 0..(name_length as usize) {
                     name.push(bytes[i] as char);
