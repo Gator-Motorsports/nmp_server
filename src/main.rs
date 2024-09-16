@@ -18,7 +18,9 @@ mod message;
 #[derive(Parser)]
 #[command(version, about)]
 struct Args {
+    #[arg(short, long)]
     unix_path: Option<PathBuf>,
+    #[arg(short, long)]
     tcp_addr: Option<SocketAddr>,
 }
 
@@ -44,7 +46,7 @@ async fn main() {
 
     let (tx, _) = channel(1_000);
 
-    if let Some(path) = args.unix_path {
+    if let Some(ref path) = args.unix_path {
         let socket = UnixSocket::new_stream().unwrap();
         socket.bind(path).unwrap();
 
@@ -56,9 +58,9 @@ async fn main() {
         });
     }
 
-    if let Some(addr) = args.tcp_addr {
+    if let Some(ref addr) = args.tcp_addr {
         let socket = TcpSocket::new_v4().unwrap();
-        socket.bind(addr).unwrap();
+        socket.bind(*addr).unwrap();
 
         let listener = socket.listen(32).unwrap();
         let bus = tx.clone();
@@ -66,4 +68,10 @@ async fn main() {
             start_listener(listener, bus).await;
         });
     }
+
+    let _ = tokio::signal::ctrl_c().await;
+    if let Some(ref path) = args.unix_path {
+        let _ = std::fs::remove_file(path);
+    }
+    std::process::exit(0);
 }
