@@ -1,6 +1,17 @@
 # New Member Project Data Handler Server
 This is the server that you will be exchanging TCP packets with for the new member project.
 
+# Rust Installation
+Go to [Rust's website](https://www.rust-lang.org/tools/install) and follow their installation instructions.
+
+# Installation
+You can install the server just by cloning it.
+
+```
+git clone https://github.com/Gator-Motorsports/nmp_server.git
+cd nmp_server
+```
+
 # Running the server
 You can run the server from the terminal by entering: `cargo run --release --bin nmp_server -- -t ip_addr`.
 
