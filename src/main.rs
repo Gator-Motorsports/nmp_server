@@ -6,10 +6,13 @@ use connection_handler::start_connection;
 use message::Data;
 use tokio::{
     io::{AsyncRead, AsyncWrite},
-    net::{TcpSocket, UnixSocket},
+    net::TcpSocket,
     sync::broadcast::{channel, Sender},
 };
 use tokio_util::{codec::Framed, net::Listener};
+
+#[cfg(unix)]
+use tokio::net::UnixSocket;
 
 mod codec;
 mod connection_handler;
@@ -18,7 +21,8 @@ mod message;
 #[derive(Parser)]
 #[command(version, about)]
 struct Args {
-    #[arg(short, long)]
+    #[cfg_attr(unix, arg(short, long))]
+    #[cfg(unix)]
     unix_path: Option<PathBuf>,
     #[arg(short, long)]
     tcp_addr: Option<SocketAddr>,
@@ -46,6 +50,7 @@ async fn main() {
 
     let (tx, _) = channel(1_000);
 
+    #[cfg(unix)]
     if let Some(ref path) = args.unix_path {
         let socket = UnixSocket::new_stream().unwrap();
         socket.bind(path).unwrap();

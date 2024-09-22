@@ -14,7 +14,8 @@ fn get_length(item: &Message) -> u32 {
     let length = match item {
         Message::Signal(name, data) => {
             8 + name.len() as u32
-                + 4 + match data {
+                + 4
+                + match data {
                     message::Data::Integer(_) => 8,
                     message::Data::Float(_) => 8,
                     message::Data::Bool(_) => 1,
@@ -154,7 +155,6 @@ mod test {
         let back = codec.decode(&mut bytes).unwrap().unwrap();
 
         assert_eq!(signal, back);
-
     }
 
     #[test]

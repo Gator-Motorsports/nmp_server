@@ -143,9 +143,7 @@ mod test {
             .send(Message::Signal("hi".to_string(), Data::Integer(1)))
             .await
             .unwrap();
-        if let Ok(Some(Ok(_))) =
-            timeout(Duration::from_millis(100), client_framed.next()).await
-        {
+        if let Ok(Some(Ok(_))) = timeout(Duration::from_millis(100), client_framed.next()).await {
             panic!("not supposed to receive anything");
         }
     }
@@ -186,9 +184,7 @@ mod test {
             panic!("Did not receive response");
         }
 
-        if let Ok(Some(Ok(_))) =
-            timeout(Duration::from_millis(200), client_framed.next()).await
-        {
+        if let Ok(Some(Ok(_))) = timeout(Duration::from_millis(200), client_framed.next()).await {
             panic!("not supposed to receive anything");
         }
     }

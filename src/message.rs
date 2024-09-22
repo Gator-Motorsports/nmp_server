@@ -10,4 +10,3 @@ pub enum Message {
     Signal(String, Data),
     Subscription(String),
 }
-

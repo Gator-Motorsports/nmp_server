@@ -9,5 +9,10 @@ Note that while the server will be active, you will have to run a seperate progr
 # Populating the server with data
 Even though the server will be running. If you want test data, you can run.
 `cargo run --release --bin nmp_tests -- -p program_name -t ip_addr`
-There's a couple of different test programs that will populate the server differently. If you need a list of these programs, you can run.
-`cargo run --release --bin nmp_tests -- -l`
+There's a couple of different test programs that will populate the server differently. 
+
+`100hz`: produces a single static signal with name "100hz" at just under 100 samples per second
+`1khz`: produces a single static signal with name "1khz" at just under 1000 samples per second
+`1khz_o`: produces a sine wave signal with name "1khz" at just under 1000 samples per second
+`1khz_4`: produces 4 single static signal with name "1khz" at just under 1000 samples per second
+More test programs are currently a work in progress, feel free to make you're own on you rlocal clone of the server.
