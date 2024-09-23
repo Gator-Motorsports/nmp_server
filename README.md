@@ -34,4 +34,4 @@ There's a couple of different test programs that will populate the server differ
 
 `1khz_4`: produces 4 single static signal with name "1khz" at just under 1000 samples per second
 
-More test programs are currently a work in progress, feel free to make you're own on your local clone of the server.
+More test programs are currently a work in progress, feel free to make your own on your local clone of the server.
