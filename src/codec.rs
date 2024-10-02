@@ -84,11 +84,11 @@ impl Decoder for MessageCodec {
             return Ok(None);
         }
         let length = u32::from_le_bytes(src[0..4].try_into().unwrap());
-        let _ = src.split_to(4);
 
-        if (src.len() as u32) < length {
+        if (src.len() as u32 - 4) < length {
             return Ok(None);
         }
+        let _ = src.split_to(4);
         let mut bytes = src.split_to(length as usize);
 
         let variant = u32::from_le_bytes(bytes[0..4].try_into().unwrap());
