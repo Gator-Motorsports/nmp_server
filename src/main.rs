@@ -64,6 +64,7 @@ async fn main() {
     }
 
     if let Some(ref addr) = args.tcp_addr {
+        println!("Listening on addr: {}", addr);
         let socket = TcpSocket::new_v4().unwrap();
         socket.bind(*addr).unwrap();
 

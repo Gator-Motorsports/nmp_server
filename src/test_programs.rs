@@ -27,12 +27,18 @@ struct Args {
 async fn main() {
     let args = Args::parse();
 
-    let connection = TcpStream::connect("/tmp/dh.socket").await.unwrap();
+    let connection = TcpStream::connect(args.tcp_addr).await.unwrap();
     let mut framed = Framed::new(connection, MessageCodec::new());
+
+    let mut started = false;
 
     if let Some(program_name) = args.program_name {
         match program_name.as_str() {
             "100hz" => loop {
+                if !started {
+                    println!("Starting test: {}", program_name);
+                }
+                started = true;
                 framed
                     .send(Message::Signal("100hz".into(), Data::Integer(10)))
                     .await
@@ -40,6 +46,10 @@ async fn main() {
                 tokio::time::sleep(Duration::from_millis(10)).await;
             },
             "1khz" => loop {
+                if !started {
+                    println!("Starting test: {}", program_name);
+                }
+                started = true;
                 framed
                     .send(Message::Signal("1khz".into(), Data::Integer(10)))
                     .await
@@ -47,6 +57,10 @@ async fn main() {
                 tokio::time::sleep(Duration::from_millis(1)).await;
             },
             "1khz_o" => {
+                if !started {
+                    println!("Starting test: {}", program_name);
+                }
+                started = true;
                 let start = Instant::now();
                 loop {
                     framed
@@ -62,6 +76,7 @@ async fn main() {
                 }
             }
             "1khz_4" => loop {
+                println!("Starting test: {}", program_name);
                 framed
                     .send(Message::Signal("1khz_a".into(), Data::Integer(10)))
                     .await
