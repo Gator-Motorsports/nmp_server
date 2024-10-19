@@ -55,9 +55,11 @@ pub async fn start_sink<IO>(
     loop {
         tokio::select! {
             Some(subscription) = sub_rx.recv() => {
+                log::debug!("Processing subscription {:?}", &subscription);
                 subscriptions.insert(subscription);
             }
             Ok((name, data)) = bus.recv() => {
+                log::debug!("Processing data from {:?}", &name);
                 if subscriptions.contains(&name) {
                     io.send(Message::Signal(name, data)).await.unwrap();
                 }
@@ -79,6 +81,7 @@ pub async fn start_stream<IO>(
                 bus.send((name, data)).unwrap();
             }
             Message::Subscription(name) => {
+                log::info!("Received subscription for {}", &name);
                 sub_tx.send(name).unwrap();
             }
         }
