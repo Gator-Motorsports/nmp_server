@@ -59,8 +59,8 @@ pub async fn start_sink<IO>(
                 subscriptions.insert(subscription);
             }
             Ok((name, data)) = bus.recv() => {
-                log::debug!("Processing data from {:?}", &name);
                 if subscriptions.contains(&name) {
+                    log::debug!("Sending out data of name: {:?}", &name);
                     io.send(Message::Signal(name, data)).await.unwrap();
                 }
             }
@@ -78,6 +78,7 @@ pub async fn start_stream<IO>(
     while let Some(Ok(message)) = io.next().await {
         match message {
             Message::Signal(name, data) => {
+                log::debug!("Received data of name: {:?}", &name);
                 bus.send((name, data)).unwrap();
             }
             Message::Subscription(name) => {
