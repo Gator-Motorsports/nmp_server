@@ -5,7 +5,7 @@ use std::{
 
 use clap::Parser;
 use codec::MessageCodec;
-use futures_util::SinkExt;
+use futures_util::{SinkExt, StreamExt};
 use message::{Data, Message};
 use tokio::net::TcpStream;
 use tokio_util::codec::Framed;
@@ -26,6 +26,7 @@ struct Args {
 #[tokio::main]
 async fn main() {
     let args = Args::parse();
+    let tcp = args.tcp_addr.clone();
 
     let connection = TcpStream::connect(args.tcp_addr).await.unwrap();
     let mut framed = Framed::new(connection, MessageCodec::new());
@@ -46,20 +47,24 @@ async fn main() {
                 tokio::time::sleep(Duration::from_millis(10)).await;
             },
             "1khz" => loop {
+                let mut ticker = tokio::time::interval(Duration::from_millis(1));
                 if !started {
                     println!("Starting test: {}", program_name);
                 }
                 started = true;
+                let before = Instant::now();
                 framed
                     .send(Message::Signal("1khz".into(), Data::Integer(10)))
                     .await
                     .unwrap();
-                tokio::time::sleep(Duration::from_millis(1)).await;
+                ticker.tick().await;
+                println!("Time elapsed: {}", Instant::elapsed(&before).as_micros());
             },
             "1khz_o" => {
                 if !started {
                     println!("Starting test: {}", program_name);
                 }
+                let mut ticker = tokio::time::interval(Duration::from_millis(1));
                 started = true;
                 let start = Instant::now();
                 loop {
@@ -72,29 +77,42 @@ async fn main() {
                         ))
                         .await
                         .unwrap();
-                    tokio::time::sleep(Duration::from_millis(1)).await;
+                    ticker.tick().await;
                 }
             }
-            "1khz_4" => loop {
-                println!("Starting test: {}", program_name);
-                framed
-                    .send(Message::Signal("1khz_a".into(), Data::Integer(10)))
+            "1khz_4" => {
+                let mut ticker = tokio::time::interval(Duration::from_millis(1));
+                loop {
+                    println!("Starting test: {}", program_name);
+                    framed
+                        .send(Message::Signal("1khz_a".into(), Data::Integer(10)))
+                        .await
+                        .unwrap();
+                    framed
+                        .send(Message::Signal("1khz_b".into(), Data::Float(-12.0)))
+                        .await
+                        .unwrap();
+                    framed
+                        .send(Message::Signal("1khz_c".into(), Data::Bool(true)))
+                        .await
+                        .unwrap();
+                    framed
+                        .send(Message::Signal("1khz_d".into(), Data::Integer(21)))
+                        .await
+                        .unwrap();
+                    ticker.tick().await;
+                }
+            }
+            "rec_100hz" => {
+                let connection2 = TcpStream::connect(tcp).await.unwrap();
+                let mut framed2 = Framed::new(connection2, MessageCodec::new());
+                framed2
+                    .send(Message::Subscription("100hz".into()))
                     .await
                     .unwrap();
-                framed
-                    .send(Message::Signal("1khz_b".into(), Data::Float(-12.0)))
-                    .await
-                    .unwrap();
-                framed
-                    .send(Message::Signal("1khz_c".into(), Data::Bool(true)))
-                    .await
-                    .unwrap();
-                framed
-                    .send(Message::Signal("1khz_d".into(), Data::Integer(21)))
-                    .await
-                    .unwrap();
-                tokio::time::sleep(Duration::from_millis(1)).await;
-            },
+                let v = framed2.next().await.unwrap().unwrap();
+                println!("Received {:?}", v);
+            }
             _ => {}
         }
     }
